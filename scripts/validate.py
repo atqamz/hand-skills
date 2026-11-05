@@ -8,7 +8,11 @@ MAX_NAME = 64
 MAX_BYTES = 20000
 NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 KEY = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*):(?:\s+(.*))?$")
-LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)|!\[[^\]]*\]\(([^)\s]+)\)")
+LINK = re.compile(
+    r"(?<!!)\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)|!\[[^\]]*\]\(([^)\s]+)\)"
+    r"|^[ ]{0,3}\[[^\]]+\]:[ \t]*<?(\S+?)>?(?:[ \t]|\"|$)",
+    re.MULTILINE,
+)
 SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 PATHS = [re.compile(p, re.IGNORECASE) for p in (r"/home/", r"/Users/", r"C:\\{1,2}Users")]
 SECRETS = [
@@ -82,7 +86,7 @@ def check_text(path, root):
                 errors.append(f"{path.name}:{number}: looks like a secret")
     if path.suffix == ".md":
         for match in LINK.finditer(text):
-            target = match.group(1) or match.group(2)
+            target = match.group(1) or match.group(2) or match.group(3)
             if target.startswith("#") or SCHEME.match(target):
                 continue
             resolved = (path.parent / target.split("#", 1)[0]).resolve()

@@ -31,6 +31,7 @@ class Fixtures(unittest.TestCase):
             "bad-long": "over the 400 limit",
             "bad-path": "machine-specific path",
             "bad-link": "does not resolve",
+            "bad-ref-link": "does not resolve",
             "bad-big": "byte limit",
         }
         for name, message in cases.items():
@@ -80,6 +81,12 @@ class Generated(unittest.TestCase):
     def test_link_escaping_folder_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
             code, out = run(self.skill(tmp, "[up](../other.md)\n"))
+        self.assertEqual(code, 1)
+        self.assertIn("leaves the skill folder", out)
+
+    def test_reference_link_escaping_folder_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, out = run(self.skill(tmp, "See [up][up].\n\n[up]: ../other.md\n"))
         self.assertEqual(code, 1)
         self.assertIn("leaves the skill folder", out)
 
